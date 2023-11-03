@@ -56,6 +56,7 @@ from nemo.collections.nlp.modules.common.transformer.text_generation import (
     SamplingParam,
     TextGeneration,
 )
+from nemo.collections.nlp.parts.mixins.nlp_adapter_mixins import NLPAdapterModelMixin
 from nemo.collections.nlp.parts import utils_funcs
 from nemo.collections.nlp.parts.utils_funcs import activation_to_func, get_last_rank
 from nemo.core.classes import Exportable
@@ -1191,7 +1192,7 @@ class MegatronGPTModel(MegatronBaseModel, TextGeneration):
             )
 
     def setup_test_data(self, cfg):
-        if hasattr(self, '_test_ds'):
+        if hasattr(self, '_test_ds') and self._test_ds:
             consumed_samples = 0
             logging.info(
                 f'Setting up test dataloader with len(len(self._test_ds)): {len(self._test_ds)} and consumed samples: {consumed_samples}'
@@ -1637,3 +1638,7 @@ class MegatronGPTModel(MegatronBaseModel, TextGeneration):
             self.model = Float16Wrapper(**args)
 
         args.pop('module')
+
+class MegatronGPTPEFTModel(NLPAdapterModelMixin, MegatronGPTModel):
+    def __init__(self, cfg: DictConfig, trainer: Trainer):
+        super().__init__(cfg, trainer=trainer)

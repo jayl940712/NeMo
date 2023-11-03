@@ -173,9 +173,9 @@ def build_train_valid_test_datasets(
         prefixes, weights, datasets_train_valid_test_num_samples = output
 
         # Build individual datasets.
-        train_datasets = []
-        valid_datasets = []
-        test_datasets = []
+        train_datasets, train_weights = [], []
+        valid_datasets, valid_weights = [], []
+        test_datasets, test_weights = [], []
         for i in range(len(prefixes)):
             train_ds, valid_ds, test_ds = _build_train_valid_test_datasets(
                 cfg,
@@ -191,23 +191,26 @@ def build_train_valid_test_datasets(
             )
             if train_ds:
                 train_datasets.append(train_ds)
+                train_weights.append(weights[i])
             if valid_ds:
                 valid_datasets.append(valid_ds)
+                valid_weights.append(weights[i])
             if test_ds:
                 test_datasets.append(test_ds)
+                test_weights.append(weights[i])
 
         train_n, valid_n, test_n = map(sum, zip(*datasets_train_valid_test_num_samples))
 
         # Blend.
         blending_train_dataset = None
         if train_datasets:
-            blending_train_dataset = BlendableDataset(train_datasets, weights, train_n)
+            blending_train_dataset = BlendableDataset(train_datasets, train_weights, train_n)
         blending_valid_dataset = None
         if valid_datasets:
-            blending_valid_dataset = BlendableDataset(valid_datasets, weights, valid_n)
+            blending_valid_dataset = BlendableDataset(valid_datasets, valid_weights, valid_n)
         blending_test_dataset = None
         if test_datasets:
-            blending_test_dataset = BlendableDataset(test_datasets, weights, test_n)
+            blending_test_dataset = BlendableDataset(test_datasets, test_weights, test_n)
 
         return (blending_train_dataset, blending_valid_dataset, blending_test_dataset)
 
